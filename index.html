@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#171326">
+<title>STAR GACHA</title>
+<style>
+:root{color-scheme:dark;--bg:#100e1b;--panel:#1c1930;--panel2:#28223e;--ink:#f8f5ff;--muted:#b7b0ca;--pink:#ff73c8;--gold:#ffd780;--line:#3a3152}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#302044 0,#100e1b 58%);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;min-height:100vh}
+main{max-width:680px;margin:auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+header{text-align:center;padding:16px 0 22px}header .star{font-size:28px;color:var(--gold)}h1{font-size:27px;letter-spacing:.1em;margin:6px 0}header p{margin:0;color:var(--muted);font-size:13px}
+.card{background:rgba(28,25,48,.94);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 12px 28px #0002}
+.result{min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(145deg,#35264c,#211a37);border-radius:16px;padding:20px}
+.result .mark{font-size:35px;color:var(--gold)}.result .rarity{font-size:12px;letter-spacing:.2em;color:var(--gold);margin:8px 0}.result h2{font-size:26px;margin:2px 0 6px;overflow-wrap:anywhere}.result .hint{font-size:12px;color:var(--muted)}
+button,input,select{font:inherit}button{border:0;border-radius:12px;padding:12px 14px;min-height:46px;font-weight:700;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.primary{width:100%;margin-top:12px;color:#24152c;background:linear-gradient(90deg,#ff9edc,#ffd780);font-size:17px}.secondary{background:var(--panel2);border:1px solid var(--line);color:var(--ink)}.danger{background:#432333;color:#ffdbe7;border:1px solid #744057}.small{padding:8px 10px;min-height:38px;font-size:13px}
+h3{margin:0 0 13px;font-size:17px}label{display:block;color:var(--muted);font-size:13px;margin:10px 0 6px}input,select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line);background:#141121;color:var(--ink);padding:10px 12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{flex:1}.note{font-size:12px;color:var(--muted);line-height:1.6}.item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.item-main{min-width:0;flex:1}.item-name{font-weight:700;overflow-wrap:anywhere}.pill{display:inline-block;font-size:11px;border-radius:999px;padding:4px 8px;background:#3c2b52;color:#ffd780;margin-top:5px}.item-actions{display:flex;gap:6px}.empty{color:var(--muted);text-align:center;padding:18px 0;font-size:13px}.prob{display:grid;grid-template-columns:70px 1fr 74px;align-items:center;gap:8px;margin:10px 0}.prob label{margin:0}.prob input{min-width:0}.section-title{display:flex;justify-content:space-between;align-items:center;gap:8px}.section-title h3{margin:0}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:6px 8px 20px}
+@media(min-width:560px){main{padding-left:24px;padding-right:24px}.card{padding:22px}}
+</style>
+</head>
+<body>
+<main>
+<header><div class="star">✦ ✧ ✦</div><h1>STAR GACHA</h1><p>MY PERSONAL COLLECTION · 個人用ガチャ</p></header>
+<section class="card">
+  <div class="result" aria-live="polite">
+    <div class="mark">✦</div><div class="rarity" id="resultRarity">READY TO GACHA</div>
+    <h2 id="resultName">誰が出るかな？</h2><div class="hint" id="resultHint">女優名を登録してガチャを回そう</div>
+  </div>
+  <button class="primary" id="drawBtn">✦ ガチャを回す</button>
+  <p class="note" id="drawInfo">登録人数：0人</p>
+</section>
+<section class="card">
+  <h3>排出確率</h3>
+  <p class="note">各レアリティの確率を設定できます。合計が100%になるように調整してください。</p>
+  <div class="prob"><label for="pSSR">SSR</label><input id="pSSR" type="range" min="0" max="100" value="5"><output id="oSSR">5%</output></div>
+  <div class="prob"><label for="pSR">SR</label><input id="pSR" type="range" min="0" max="100" value="15"><output id="oSR">15%</output></div>
+  <div class="prob"><label for="pR">R</label><input id="pR" type="range" min="0" max="100" value="30"><output id="oR">30%</output></div>
+  <div class="prob"><label for="pN">N</label><input id="pN" type="range" min="0" max="100" value="50"><output id="oN">50%</output></div>
+  <p class="note" id="probTotal">合計：100%</p>
+</section>
+<section class="card">
+  <h3 id="formTitle">女優を追加</h3>
+  <label for="nameInput">名前</label><input id="nameInput" maxlength="60" placeholder="例：登録したい名前" autocomplete="off">
+  <div class="row">
+    <div><label for="rarityInput">レアリティ</label><select id="rarityInput"><option>SSR</option><option>SR</option><option>R</option><option selected>N</option></select></div>
+    <div><label for="memoInput">メモ（任意）</label><input id="memoInput" maxlength="80" placeholder="好きな作品など"></div>
+  </div>
+  <div class="actions"><button class="primary" id="saveBtn" style="margin-top:0">追加する</button><button class="secondary" id="cancelEdit" hidden>編集をキャンセル</button></div>
+  <p class="note">名前やメモは自分で入力してください。画像や外部サイトとの連携はありません。</p>
+</section>
+<section class="card">
+  <div class="section-title"><h3>登録リスト <span id="countLabel"></span></h3><button class="secondary small" id="exportBtn">バックアップ</button></div>
+  <label for="filterRarity">レアリティで絞り込み</label>
+  <select id="filterRarity"><option value="ALL">すべて</option><option>SSR</option><option>SR</option><option>R</option><option>N</option></select>
+  <div id="roster"></div>
+  <div class="actions"><button class="secondary" id="importBtn">バックアップを復元</button><button class="danger" id="clearBtn">全データ削除</button></div>
+  <input type="file" id="importFile" accept="application/json,.json" hidden>
+</section>
+<section class="card">
+  <div class="section-title"><h3>ガチャ履歴</h3><button class="secondary small" id="clearHistory">履歴を消す</button></div>
+  <div id="history"></div>
+</section>
+<footer>データはこのブラウザのローカルストレージに保存されます。Safariの履歴・Webサイトデータ削除や端末変更で失われる場合があるため、定期的にバックアップしてください。</footer>
+</main>
+<script>
+(() => {
+  const KEY = 'starGacha_v1';
+  const defaultState = { roster: [], history: [], probs: {SSR:5, SR:15, R:30, N:50} };
+  let state = loadState();
+  let editingId = null;
+  const $ = id => document.getElementById(id);
+  const rarities = ['SSR','SR','R','N'];
+  function loadState(){
+    try {
+      const parsed = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (parsed && Array.isArray(parsed.roster) && Array.isArray(parsed.history)) {
+        return {...defaultState, ...parsed, probs:{...defaultState.probs,...(parsed.probs||{})}};
+      }
+    } catch(e) {}
+    return structuredClone(defaultState);
+  }
+  function saveState(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) { alert('保存できませんでした。Safariの空き容量や設定を確認してください。'); } }
+  function safeText(tag, text, className){
+    const el=document.createElement(tag); if(className) el.className=className; el.textContent=text; return el;
+  }
+  function render(){
+    $('drawInfo').textContent=`登録人数：${state.roster.length}人`;
+    $('countLabel').textContent=`(${state.roster.length})`;
+    const list=$('roster'); list.replaceChildren();
+    const filter=$('filterRarity').value;
+    const roster=state.roster.filter(x=>filter==='ALL'||x.rarity===filter);
+    if(!roster.length) list.append(safeText('div','まだ登録がありません。上のフォームから追加してください。','empty'));
+    roster.forEach(person=>{
+      const item=safeText('div','','item'), main=safeText('div','','item-main');
+      main.append(safeText('div',person.name,'item-name'),safeText('span',person.rarity,'pill'));
+      if(person.memo) main.append(safeText('div',person.memo,'note'));
+      const actions=safeText('div','','item-actions');
+      const edit=safeText('button','編集','secondary small'); edit.addEventListener('click',()=>startEdit(person.id));
+      const del=safeText('button','削除','danger small'); del.addEventListener('click',()=>deletePerson(person.id));
+      actions.append(edit,del); item.append(main,actions); list.append(item);
+    });
+    const hist=$('history'); hist.replaceChildren();
+    if(!state.history.length) hist.append(safeText('div','まだ履歴はありません。','empty'));
+    state.history.slice(0,30).forEach(h=>{
+      const item=safeText('div','','item'), main=safeText('div','','item-main');
+      main.append(safeText('div',h.name,'item-name'),safeText('span',h.rarity,'pill'),safeText('div',new Date(h.time).toLocaleString('ja-JP'),'note'));
+      hist.append(item.append(main));
+    });
+    updateProbUI();
+  }
+  function updateProbUI(){
+    let total=0;
+    rarities.forEach(r=>{const value=Number(state.probs[r]||0); total+=value; $('p'+r).value=value; $('o'+r).textContent=value+'%';});
+    $('probTotal').textContent=`合計：${total}%`+(total===100?'':'（ガチャを回すには合計100%にしてください）');
+    $('probTotal').style.color=total===100?'':'#ff9fb8';
+    $('drawBtn').disabled=state.roster.length===0||total!==100;
+    $('drawBtn').style.opacity=$('drawBtn').disabled?'.55':'1';
+  }
+  function startEdit(id){
+    const p=state.roster.find(x=>x.id===id); if(!p)return;
+    editingId=id; $('nameInput').value=p.name; $('rarityInput').value=p.rarity; $('memoInput').value=p.memo||'';
+    $('formTitle').textContent='女優を編集'; $('saveBtn').textContent='変更を保存'; $('cancelEdit').hidden=false;
+    $('nameInput').focus(); $('formTitle').scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  function resetForm(){
+    editingId=null; $('nameInput').value=''; $('memoInput').value=''; $('rarityInput').value='N';
+    $('formTitle').textContent='女優を追加'; $('saveBtn').textContent='追加する'; $('cancelEdit').hidden=true;
+  }
+  function deletePerson(id){
+    const p=state.roster.find(x=>x.id===id); if(!p)return;
+    if(!confirm(`「${p.name}」を登録リストから削除しますか？`))return;
+    state.roster=state.roster.filter(x=>x.id!==id); saveState(); render();
+  }
+  $('saveBtn').addEventListener('click',()=>{
+    const name=$('nameInput').value.trim(); if(!name){alert('名前を入力してください。');$('nameInput').focus();return;}
+    const duplicate=state.roster.some(p=>p.name.toLocaleLowerCase()===name.toLocaleLowerCase()&&p.id!==editingId);
+    if(duplicate&&!confirm('同じ名前がすでに登録されています。追加しますか？'))return;
+    const data={name,rarity:$('rarityInput').value,memo:$('memoInput').value.trim()};
+    if(editingId){const p=state.roster.find(x=>x.id===editingId);if(p)Object.assign(p,data);}
+    else state.roster.unshift({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),...data});
+    saveState();resetForm();render();
+  });
+  $('cancelEdit').addEventListener('click',resetForm);
+  $('filterRarity').addEventListener('change',render);
+  rarities.forEach(r=>$('p'+r).addEventListener('input',()=>{
+    state.probs[r]=Number($('p'+r).value);
+    updateProbUI(); saveState();
+  }));
+  $('drawBtn').addEventListener('click',()=>{
+    const total=rarities.reduce((sum,r)=>sum+Number(state.probs[r]||0),0);
+    if(!state.roster.length){alert('先に女優名を登録してください。');return;}
+    if(total!==100){alert('排出確率の合計を100%にしてください。');return;}
+    let n=Math.random()*100, rarity='N';
+    for(const r of rarities){n-=Number(state.probs[r]||0);if(n<0){rarity=r;break;}}
+    const pool=state.roster.filter(p=>p.rarity===rarity);
+    const actualPool=pool.length?pool:state.roster;
+    const picked=actualPool[Math.floor(Math.random()*actualPool.length)];
+    const shownRarity=pool.length?rarity:picked.rarity;
+    $('resultRarity').textContent='✦ '+shownRarity+' ✦';
+    $('resultName').textContent=picked.name;
+    $('resultHint').textContent=pool.length?'NEW ENCOUNTER!':'このレアリティの登録がないため、登録済み全員から抽選';
+    state.history.unshift({name:picked.name,rarity:shownRarity,time:Date.now()});
+    state.history=state.history.slice(0,100);saveState();render();
+  });
+  $('clearHistory').addEventListener('click',()=>{
+    if(confirm('ガチャ履歴をすべて削除しますか？')){state.history=[];saveState();render();}
+  });
+  $('clearBtn').addEventListener('click',()=>{
+    if(confirm('登録リスト・履歴・確率設定をすべて削除します。この操作は元に戻せません。先にバックアップすることをおすすめします。')){
+      state=structuredClone(defaultState);saveState();resetForm();render();
+      $('resultRarity').textContent='READY TO GACHA';$('resultName').textContent='誰が出るかな？';$('resultHint').textContent='女優名を登録してガチャを回そう';
+    }
+  });
+  $('exportBtn').addEventListener('click',()=>{
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='star-gacha-backup.json';a.click();URL.revokeObjectURL(url);
+  });
+  $('importBtn').addEventListener('click',()=>$('importFile').click());
+  $('importFile').addEventListener('change',async e=>{
+    const file=e.target.files[0];if(!file)return;
+    try{
+      const incoming=JSON.parse(await file.text());
+      if(!Array.isArray(incoming.roster)||!Array.isArray(incoming.history))throw new Error();
+      if(!confirm('現在のデータをバックアップ内のデータで置き換えますか？'))return;
+      state={...defaultState,...incoming,probs:{...defaultState.probs,...(incoming.probs||{})}};
+      state.roster=state.roster.filter(p=>p&&typeof p.name==='string'&&rarities.includes(p.rarity));
+      state.history=state.history.slice(0,100);saveState();resetForm();render();alert('バックアップを復元しました。');
+    }catch(err){alert('ファイルを読み込めませんでした。有効なバックアップJSONを選んでください。');}
+    finally{e.target.value='';}
+  });
+  render();
+})();
+</script>
+</body>
+</html>
